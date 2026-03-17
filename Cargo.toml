@@ -1,0 +1,17 @@
+[package]
+name = "gpux"
+version = "0.1.0"
+edition = "2024"
+description = "React-like DX and Tailwind utility classes for GPUI"
+repository = "https://github.com/fukayatti/gpux"
+license = "MIT"
+
+[dependencies]
+gpux_macros = { path = "core" }
+gpui = "0.2.2"
+
+[workspace]
+members = [
+    "core",
+    "demo_app"
+]

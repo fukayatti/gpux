@@ -1,0 +1,16 @@
+[package]
+name = "gpux_macros"
+version = "0.1.0"
+edition = "2024"
+description = "Procedural macros for the gpux crate"
+repository = "https://github.com/fukayatti/gpux"
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+rstml = "0.11"
+syn = { version = "2.0", features = ["full", "extra-traits"] }
