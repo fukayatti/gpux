@@ -3,10 +3,10 @@ mod colors;
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
 use rstml::node::{Node, NodeAttribute, NodeElement};
 use std::collections::HashMap;
-use syn::{parse_macro_input, ItemFn};
+use syn::{ItemFn, parse_macro_input};
 
 #[derive(Hash, Eq, PartialEq, Debug)]
 enum Modifier {
@@ -361,10 +361,13 @@ fn process_element(elem: &NodeElement) -> proc_macro2::TokenStream {
                 {
                     let class_string = lit_str.value();
 
-                    if (class_string.contains("active:") || class_string.contains("animate-"))
+                    if (class_string.contains("active:")
+                        || class_string.contains("animate-")
+                        || class_string.contains("scroll")
+                        || class_string.contains("overflow-"))
                         && !has_id
                     {
-                        chain.extend(quote! { .id("auto-id") });
+                        chain.extend(quote! { .id("auto-state-id") });
                         has_id = true;
                     }
 
@@ -491,6 +494,16 @@ fn process_tailwind_class(class: &str) -> (Modifier, proc_macro2::TokenStream) {
         return (Modifier::Base, quote! { .group("group") });
     } else if let Some(stripped) = class.strip_prefix("group/") {
         return (Modifier::Base, quote! { .group(#stripped) });
+    } else if class == "border" {
+        return (Modifier::Base, quote! { .border_1() });
+    } else if class == "border-l" {
+        return (Modifier::Base, quote! { .border_l_1() });
+    } else if class == "border-r" {
+        return (Modifier::Base, quote! { .border_r_1() });
+    } else if class == "border-t" {
+        return (Modifier::Base, quote! { .border_t_1() });
+    } else if class == "border-b" {
+        return (Modifier::Base, quote! { .border_b_1() });
     }
 
     match class {
@@ -633,7 +646,7 @@ fn process_tailwind_class(class: &str) -> (Modifier, proc_macro2::TokenStream) {
                 },
             );
         }
-        "transition" | "overflow-y-scroll" | "overflow-scroll" | "overflow-x-scroll" => {
+        "transition" => {
             return (Modifier::Base, quote! {});
         }
         _ => {

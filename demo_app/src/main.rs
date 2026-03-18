@@ -1,6 +1,6 @@
 use gpui::{
-    prelude::*, px, size, App, Application, Bounds, Context, Entity, Window, WindowBounds,
-    WindowOptions,
+    App, Application, Bounds, Context, Entity, Window, WindowBounds, WindowOptions, prelude::*, px,
+    size,
 };
 use gpux::{
     gpui_component, use_animation, use_context, use_effect, use_future, use_memo, use_state, view,
@@ -93,7 +93,22 @@ fn Counter(app_cx: &mut App, initial_value: i32, title: String) -> impl IntoElem
             </div>
 
             <div class="mt-4 text-slate-500 text-[16px]">
-                "Built with my_tailwind_macro & Svelte/React Hooks DX"
+                "Built with gpux & Svelte/React Hooks DX"
+            </div>
+
+            <div
+                id="my-scroll-area"
+                class="w-[300px] h-[100px] bg-white border border-gray-300 rounded-md overflow-y-scroll p-2"
+                children={
+                    (0..20).map(|i| {
+                        view! {
+                            <div class="p-1 border-b border-gray-100 text-gray-700">
+                                { format!("Scrollable Item #{}", i) }
+                            </div>
+                        }.into_any()
+                    })
+                }
+            >
             </div>
 
             <div
