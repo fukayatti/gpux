@@ -3,7 +3,7 @@ mod colors;
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use quote::{ToTokens, format_ident, quote};
+use quote::{format_ident, quote};
 use rstml::node::{Node, NodeAttribute, NodeElement};
 use std::collections::HashMap;
 use syn::{ItemFn, parse_macro_input};
@@ -258,8 +258,10 @@ pub fn use_future(input: TokenStream) -> TokenStream {
                 let __entity_clone = __entity.clone();
                 let _task: gpui::Task<()> = cx.spawn(async move |_this, mut __cx| {
                     let __res = { #body };
+                    println!("Future completed for ID: {}", __idx);
                     let _ = __cx.update(|cx: &mut gpui::App| {
                         __entity_clone.update(cx, |this_ref: &mut Self, cx: &mut gpui::Context<Self>| {
+                            println!("State updated for ID: {}", __idx);
                             this_ref.hooks.set_state::<Option<#ty>>(__idx, Some(__res));
                             cx.notify();
                         })
@@ -307,7 +309,7 @@ fn process_node(node: &Node) -> proc_macro2::TokenStream {
             if trimmed.is_empty() {
                 quote! {}
             } else {
-                quote! { #trimmed }
+                quote! { gpui::Component::new(gpux::components::SelectableText::new(#trimmed)) }
             }
         }
         Node::Block(block) => {
