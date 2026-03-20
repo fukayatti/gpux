@@ -7,3 +7,9 @@ edition = "2024"
 gpui = "0.2.2"
 gpux = { path = "../" }
 env_logger = "0.11"
+icondata = { version = "0.7.0", features = ["lucide", "simple-icons"] }
+
+[[bin]]
+name = "demo_app_bin"
+path = "src/bin.rs"
+

@@ -1,11 +1,18 @@
+extern crate self as gpux;
+
 pub use gpux_macros::*;
 
-pub mod hooks;
 pub mod components;
-pub mod system;
+pub mod hooks;
 pub mod router;
+pub mod system;
 
 // Re-export commonly used items for convenience
-pub use components::{text, SelectableText};
-pub use system::{selection_root, GlobalSelectionState, Copy, Cut, Paste, SelectAll};
+pub use components::icon::{Icon, icon};
+pub use components::image::{Image, image};
+
+pub use components::{SelectableText, text};
 pub use router::Navigator;
+pub use system::{
+    Copy, Cut, GlobalSelectionState, GpuxAssetSource, Paste, SelectAll, selection_root, with_assets,
+};

@@ -515,6 +515,18 @@ fn process_tailwind_class(class: &str) -> (Modifier, proc_macro2::TokenStream) {
                 quote! { .font_weight(gpui::FontWeight::BOLD) },
             );
         }
+        "font-extrabold" | "font-black" => {
+            return (
+                Modifier::Base,
+                quote! { .font_weight(gpui::FontWeight::EXTRA_BOLD) },
+            );
+        }
+        "font-medium" => {
+            return (
+                Modifier::Base,
+                quote! { .font_weight(gpui::FontWeight::MEDIUM) },
+            );
+        }
         "font-semibold" => {
             return (
                 Modifier::Base,
@@ -534,6 +546,28 @@ fn process_tailwind_class(class: &str) -> (Modifier, proc_macro2::TokenStream) {
             );
         }
         "cursor-pointer" => return (Modifier::Base, quote! { .cursor_pointer() }),
+        "bg-clip-text" => return (Modifier::Base, quote! {}), // GPUI does not support background clipping for text yet, ignore safely.
+        "tracking-tight" => return (Modifier::Base, quote! {}), // Safe ignore
+        "tracking-wide" => return (Modifier::Base, quote! {}), // Safe ignore
+        "leading-relaxed" => return (Modifier::Base, quote! {}), // Safe ignore
+        "leading-loose" => return (Modifier::Base, quote! {}), // Safe ignore
+        "leading-tight" => return (Modifier::Base, quote! {}), // Safe ignore
+        "shrink-0" => return (Modifier::Base, quote! { .flex_shrink_0() }),
+        "grid-cols-1" | "grid-cols-2" | "grid-cols-3" | "grid-cols-4" => {
+            return (Modifier::Base, quote! { .flex().flex_wrap() });
+        } // GPUI doesn't natively have a grid layout system in the exact same way, fallback to flex wrap for demo safety.
+        "max-w-xs" => return (Modifier::Base, quote! { .max_w(gpui::px(320.0)) }),
+        "max-w-sm" => return (Modifier::Base, quote! { .max_w(gpui::px(384.0)) }),
+        "max-w-md" => return (Modifier::Base, quote! { .max_w(gpui::px(448.0)) }),
+        "max-w-lg" => return (Modifier::Base, quote! { .max_w(gpui::px(512.0)) }),
+        "max-w-xl" => return (Modifier::Base, quote! { .max_w(gpui::px(576.0)) }),
+        "max-w-2xl" => return (Modifier::Base, quote! { .max_w(gpui::px(672.0)) }),
+        "max-w-3xl" => return (Modifier::Base, quote! { .max_w(gpui::px(768.0)) }),
+        "max-w-4xl" => return (Modifier::Base, quote! { .max_w(gpui::px(896.0)) }),
+        "max-w-5xl" => return (Modifier::Base, quote! { .max_w(gpui::px(1024.0)) }),
+        "backdrop-blur-sm" | "backdrop-blur-md" | "backdrop-blur-lg" => {
+            return (Modifier::Base, quote! {});
+        } // Safe ignore
         "animate-pulse" => {
             return (
                 Modifier::Animate,
@@ -657,9 +691,20 @@ fn process_tailwind_class(class: &str) -> (Modifier, proc_macro2::TokenStream) {
                 || class.starts_with("delay-")
                 || class.starts_with("transition-")
                 || class.starts_with("animate-")
+                || class.starts_with("bg-gradient")
+                || class.starts_with("from-")
+                || class.starts_with("to-")
+                || class.starts_with("via-")
             {
                 return (Modifier::Base, quote! {});
             }
+        }
+    }
+
+    if let Some(stripped) = class.strip_prefix("z-") {
+        if let Ok(_z_val) = stripped.parse::<u16>() {
+            // Safely ignore z-index since GPUI Div doesn't expose it chainably
+            return (Modifier::Base, quote! {});
         }
     }
 
