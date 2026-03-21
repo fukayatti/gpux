@@ -60,11 +60,11 @@ fn CounterPage(
           <div class="flex flex-col min-h-full items-center p-8 gap-8">
             // Hero Section
             <div class="w-full max-w-4xl bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center gap-8">
-                <div class="flex-1 flex flex-col gap-4">
-                    <div class="text-[40px] font-extrabold text-indigo-600">
-                        { text(title) }
+                <div class="flex-1 flex flex-col gap-4 min-w-0">
+                    <div class="text-[40px] font-extrabold text-indigo-600 min-w-0">
+                        text(title)
                     </div>
-                    <div class="text-[16px] text-gray-600 leading-relaxed">
+                    <div class="text-[16px] text-gray-600 leading-relaxed min-w-0 whitespace-normal">
                         "Experience the power of GPUI combined with React-like hooks, JSX-style macros, and automated image optimization. Building native desktop apps has never been this smooth."
                     </div>
                     <div class="flex flex-row gap-4 mt-2">
@@ -164,46 +164,58 @@ fn CounterPage(
                     </div>
                 </div>
 
-                // Native Integrations & Drag and Drop
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-4">
-                    <div class="flex items-center gap-2 text-[18px] font-bold text-gray-800">
-                        <div class="w-6 h-6 text-indigo-500">{ icon(icondata::LuHardDrive) }</div>
-                        "Native Integrations & Drag and Drop"
-                    </div>
-                    <div class="text-gray-500 text-[14px]">"Drag and drop an image file below, or click to open a native file dialog."</div>
-                    <div
-                        id="drop-zone"
-                        class="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors relative overflow-hidden"
-                        on_click={
+            </div>
+
+            // Native Integrations & Drag and Drop
+            <div class="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-4">
+                <div class="flex items-center gap-2 text-[18px] font-bold text-gray-800">
+                    <div class="w-6 h-6 text-indigo-500">{ icon(icondata::LuHardDrive) }</div>
+                    "Native Integrations & Drag and Drop"
+                </div>
+                <div class="text-gray-500 text-[14px]">"Drag and drop an image file below, or click to open a native file dialog."</div>
+                <div
+                    id="drop-zone"
+                    class="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors relative overflow-hidden"
+                    on_click={
+                        let set_dropped_image = set_dropped_image.clone();
+                        move |_, _, cx| {
                             let set_dropped_image = set_dropped_image.clone();
-                            move |_, _, cx| {
-                                if let Some(path) = gpux::system::file_system::dialog::open_file() {
-                                    set_dropped_image(Some(format!("file://{}", path.display())), cx);
+                            let bg_executor = cx.background_executor().clone();
+                            let mut async_cx = cx.to_async();
+                            cx.foreground_executor().spawn(async move {
+                                let path = bg_executor.spawn(async {
+                                    gpux::system::file_system::dialog::open_file()
+                                }).await;
+
+                                if let Some(path) = path {
+                                    let _ = async_cx.update(|cx| {
+                                        set_dropped_image(Some(format!("file://{}", path.display())), cx);
+                                    });
                                 }
+                            }).detach();
+                        }
+                    }
+                    on_drop={
+                        let set_dropped_image = set_dropped_image.clone();
+                        move |event: &gpui::ExternalPaths, _, cx| {
+                            if let Some(path) = event.paths().first() {
+                                set_dropped_image(Some(format!("file://{}", path.display())), cx);
                             }
                         }
-                        on_drop={
-                            let set_dropped_image = set_dropped_image.clone();
-                            move |event: &gpui::ExternalPaths, _, cx| {
-                                if let Some(path) = event.paths().first() {
-                                    set_dropped_image(Some(format!("file://{}", path.display())), cx);
-                                }
-                            }
+                    }
+                >
+                    {
+                        if let Some(url) = dropped_image.clone() {
+                            NextImage(cx, url, 800.0, 400.0).into_any_element()
+                        } else {
+                            view! {
+                                <div class="flex flex-col items-center gap-2 text-gray-400">
+                                    <div class="w-8 h-8">{ icon(icondata::FiUploadCloud) }</div>
+                                    <div class="text-[14px] font-medium">"Drop an image here or click to browse"</div>
+                                </div>
+                            }.into_any()
                         }
-                    >
-                        {
-                            if let Some(url) = dropped_image.clone() {
-                                NextImage(cx, url, 800.0, 400.0).into_any_element()
-                            } else {
-                                view! {
-                                    <div class="flex flex-col items-center gap-2 text-gray-400">
-                                        <div class="w-8 h-8">{ icon(icondata::FiUploadCloud) }</div>
-                                        <div class="text-[14px] font-medium">"Drop an image here or click to browse"</div>
-                                    </div>
-                                }.into_any()
-                            }
-                        }
-                    </div>
+                    }
                 </div>
             </div>
 

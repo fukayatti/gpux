@@ -30,7 +30,7 @@ impl Navigator {
             println!("Navigator is not initialized. Cannot navigate to {}", path);
         }
     }
-    
+
     pub fn current_path(cx: &mut App) -> Option<String> {
         if cx.has_global::<Navigator>() {
             Some(cx.global::<Navigator>().current_path.clone())

@@ -54,14 +54,14 @@ impl<T: Clone + 'static> FormHelper<T> {
     pub fn set_value<F: FnOnce(&mut T)>(&self, updater: F) {
         let mut new_state = self.state.clone();
         updater(&mut new_state.values);
-        
+
         // Validate on change
         let validation_errors = (self.validate)(&new_state.values);
         new_state.errors = validation_errors;
-        
+
         (self.set_state)(new_state);
     }
-    
+
     pub fn set_submitting(&self, is_submitting: bool) {
         let mut new_state = self.state.clone();
         new_state.is_submitting = is_submitting;

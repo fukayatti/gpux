@@ -1,5 +1,6 @@
 use gpui::{
-    Bounds, Global, InteractiveElement, IntoElement, Pixels, Point, Styled, TextLayout, actions, div, prelude::*, px,
+    Bounds, Global, InteractiveElement, IntoElement, Pixels, Point, Styled, TextLayout, actions,
+    div, prelude::*, px,
 };
 
 actions!(global_selection, [Copy, Cut, Paste, SelectAll]);
@@ -77,6 +78,15 @@ pub fn selection_root(
         })
         .on_mouse_up(gpui::MouseButton::Left, |_, window, cx| {
             cx.update_global::<GlobalSelectionState, _>(|state, _cx| {
+                state.is_dragging = false;
+            });
+            window.refresh();
+        })
+        .on_scroll_wheel(|_event, window, cx| {
+            cx.update_global::<GlobalSelectionState, _>(|state, _cx| {
+                // Clear selection when scrolling to prevent it from sticking to the screen
+                state.start = None;
+                state.end = None;
                 state.is_dragging = false;
             });
             window.refresh();

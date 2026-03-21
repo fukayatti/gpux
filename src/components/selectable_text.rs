@@ -1,6 +1,6 @@
 use gpui::{
-    App, HighlightStyle, IntoElement, ParentElement, RenderOnce, Styled, Window, div,
-    prelude::*, rgba,
+    App, HighlightStyle, IntoElement, ParentElement, RenderOnce, Styled, Window, div, prelude::*,
+    rgba,
 };
 
 use crate::system::{
