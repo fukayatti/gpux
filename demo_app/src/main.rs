@@ -33,6 +33,7 @@ fn CounterPage(
     // 状態を宣言（Svelte/Reactライク）
     let (count, set_count) = use_state!(initial_value);
     let (width, start_anim): (f32, _) = use_animation!(150.0f32);
+    let (dropped_image, set_dropped_image) = use_state!(None::<String>);
 
     let text_input_view = use_memo!((), cx.new(|cx| TextInput::new(cx)));
 
@@ -163,6 +164,47 @@ fn CounterPage(
                     </div>
                 </div>
 
+                // Native Integrations & Drag and Drop
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-4">
+                    <div class="flex items-center gap-2 text-[18px] font-bold text-gray-800">
+                        <div class="w-6 h-6 text-indigo-500">{ icon(icondata::LuHardDrive) }</div>
+                        "Native Integrations & Drag and Drop"
+                    </div>
+                    <div class="text-gray-500 text-[14px]">"Drag and drop an image file below, or click to open a native file dialog."</div>
+                    <div
+                        id="drop-zone"
+                        class="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors relative overflow-hidden"
+                        on_click={
+                            let set_dropped_image = set_dropped_image.clone();
+                            move |_, _, cx| {
+                                if let Some(path) = gpux::system::file_system::dialog::open_file() {
+                                    set_dropped_image(Some(format!("file://{}", path.display())), cx);
+                                }
+                            }
+                        }
+                        on_drop={
+                            let set_dropped_image = set_dropped_image.clone();
+                            move |event: &gpui::ExternalPaths, _, cx| {
+                                if let Some(path) = event.paths().first() {
+                                    set_dropped_image(Some(format!("file://{}", path.display())), cx);
+                                }
+                            }
+                        }
+                    >
+                        {
+                            if let Some(url) = dropped_image.clone() {
+                                NextImage(cx, url, 800.0, 400.0).into_any_element()
+                            } else {
+                                view! {
+                                    <div class="flex flex-col items-center gap-2 text-gray-400">
+                                        <div class="w-8 h-8">{ icon(icondata::FiUploadCloud) }</div>
+                                        <div class="text-[14px] font-medium">"Drop an image here or click to browse"</div>
+                                    </div>
+                                }.into_any()
+                            }
+                        }
+                    </div>
+                </div>
             </div>
 
             // Selection and scrolling
